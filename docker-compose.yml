@@ -7,7 +7,7 @@ services:
       - POSTGRES_PASSWORD=saga
       - POSTGRES_DB=saga
     ports:
-      - "5432:5432"
+      - "5433:5432"
     command:
       - "postgres"
       - "-c"
@@ -67,7 +67,7 @@ services:
     container_name: kafka-ui
     image: provectuslabs/kafka-ui:latest
     ports:
-      - 9000:8080
+      - 9001:8080
     depends_on:
       - zookeeper
       - kafka

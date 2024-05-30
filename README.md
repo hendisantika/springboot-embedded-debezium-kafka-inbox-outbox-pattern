@@ -31,3 +31,15 @@ mvn clean spring-boot:run
 ./stock-service
 mvn clean spring-boot:run
 ```
+
+Test API:
+
+```shell
+curl --location 'http://localhost:7002/v1/order' \
+--header 'Content-Type: application/json' \
+--data '{
+    "productId" : 10,
+    "totalAmount" : 3000.00,
+    "userId" : 99
+}'
+```
