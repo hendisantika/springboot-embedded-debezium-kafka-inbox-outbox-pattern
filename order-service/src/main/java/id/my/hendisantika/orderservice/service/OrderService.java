@@ -7,6 +7,7 @@ import id.my.hendisantika.orderservice.dto.request.OrderRequestDto;
 import id.my.hendisantika.orderservice.entity.Order;
 import id.my.hendisantika.orderservice.entity.OrderOutbox;
 import id.my.hendisantika.orderservice.entity.enums.OrderOutboxStatus;
+import id.my.hendisantika.orderservice.entity.enums.OrderStatus;
 import id.my.hendisantika.orderservice.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -66,6 +67,17 @@ public class OrderService {
                 .aggregateType("Order")
                 .eventType("OrderCreated")
                 .orderId(order.getId())
+                .build();
+    }
+
+    private Order convertToOrder(OrderRequestDto orderRequestDto) {
+        return Order.builder()
+                .createdDate(LocalDateTime.now())
+                .totalAmount(orderRequestDto.getTotalAmount())
+                .productId(orderRequestDto.getProductId())
+                .userId(orderRequestDto.getUserId())
+                .orderStatus(OrderStatus.CREATED)
+                .description("Order Created")
                 .build();
     }
 }
