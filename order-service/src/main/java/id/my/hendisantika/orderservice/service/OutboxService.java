@@ -1,6 +1,7 @@
 package id.my.hendisantika.orderservice.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import id.my.hendisantika.orderservice.entity.OrderOutbox;
 import id.my.hendisantika.orderservice.repository.OrderOutboxRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,4 +26,8 @@ public class OutboxService {
     private final OrderOutboxRepository orderOutboxRepository;
     private final KafkaTemplate<String, Object> kafkaTemplate;
     private final ObjectMapper mapper = new ObjectMapper();
+
+    public void save(OrderOutbox orderOutbox) {
+        orderOutboxRepository.save(orderOutbox);
+    }
 }
