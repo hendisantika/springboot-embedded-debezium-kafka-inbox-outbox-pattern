@@ -4,6 +4,7 @@ import id.my.hendisantika.orderservice.service.OutboxService;
 import io.debezium.config.Configuration;
 import io.debezium.embedded.EmbeddedEngine;
 import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -43,4 +44,10 @@ public class DebeziumSourceEventListener {
         this.executor.execute(engine);
     }
 
+    @PreDestroy
+    private void stop() {
+        if (this.engine != null) {
+            this.engine.stop();
+        }
+    }
 }
