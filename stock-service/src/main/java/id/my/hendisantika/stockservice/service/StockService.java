@@ -104,4 +104,27 @@ public class StockService {
                 .orderId(orderId)
                 .build();
     }
+
+    private ProductOutbox toOutboxEntityNoProduct(StockCreateEvent stockCreateEvent, ProductOutboxStatus productOutboxStatus, String aggregateType, String eventType) {
+        String payload = null;
+        String idempotentKey = RandomStringUtils.randomAlphanumeric(10);
+        try {
+
+            payload = mapper.writeValueAsString(stockCreateEvent);
+
+        } catch (JsonProcessingException ex) {
+            log.error("Object could not convert to String. Object: {}", stockCreateEvent.toString());
+            throw new RuntimeException(ex);
+        }
+
+        return ProductOutbox.builder()
+                .status(productOutboxStatus)
+                .createdDate(LocalDateTime.now())
+                .idempotentKey(idempotentKey)
+                .payload(payload)
+                .aggregateType(aggregateType)
+                .eventType(eventType)
+                .orderId(stockCreateEvent.getOrderId())
+                .build();
+    }
 }
