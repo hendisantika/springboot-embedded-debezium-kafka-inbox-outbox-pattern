@@ -79,4 +79,40 @@ public class OrderConsumer {
 
         acknowledgment.acknowledge();
     }
+
+    @KafkaListener(topics = "product-update-successfully", groupId = "success", containerFactory = "orderSuccessFactory")
+    public void handleSuccessOrder(@Payload String message,
+                                   @Header(KafkaHeaders.RECEIVED_KEY) @NonNull String idempotentKey,
+                                   Acknowledgment acknowledgment) throws JsonProcessingException {
+
+        log.info("message {}", message);
+        log.info("key {}", idempotentKey);
+
+        if (orderInboxRepository.findByIdempotentKey(idempotentKey).isPresent()) {
+            log.error("Stock inbox not created, {} already exist!", idempotentKey);
+            acknowledgment.acknowledge();
+            return;
+        }
+
+        final OrderDebeziumResponse response = objectMapper.readValue(message, OrderDebeziumResponse.class);
+
+        Optional<Order> order = orderRepository.findById(response.getOrder_id());
+
+        if (order.isPresent()) {
+            order.get().setOrderStatus(OrderStatus.COMPLETED);
+            order.get().setDescription(response.getEvent_type());
+            orderRepository.save(order.get());
+
+            Optional<OrderOutbox> orderOutbox = orderOutboxRepository.findByOrderId(order.get().getId());
+            if (orderOutbox.isPresent()) {
+                orderOutbox.get().setStatus(OrderOutboxStatus.DONE);
+                orderOutboxRepository.save(orderOutbox.get());
+            }
+
+        }
+        orderInboxRepository.save(OrderInbox.builder().payload(message).createdDate(LocalDateTime.now())
+                .idempotentKey(idempotentKey).build());
+
+        acknowledgment.acknowledge();
+    }
 }
