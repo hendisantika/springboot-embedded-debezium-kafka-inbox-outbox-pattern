@@ -1,6 +1,7 @@
 package id.my.hendisantika.stockservice.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import id.my.hendisantika.stockservice.entity.Products;
 import id.my.hendisantika.stockservice.entity.enums.Operation;
 import id.my.hendisantika.stockservice.entity.enums.ProductOutboxStatus;
 import id.my.hendisantika.stockservice.repository.ProductOutboxRepository;
@@ -13,6 +14,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Created by IntelliJ IDEA.
@@ -44,5 +46,35 @@ public class StockService {
             topic = "product-update-fail";
 
         kafkaTemplate.send(topic, response.getIdempotent_key(), mapper.writeValueAsString(response));
+    }
+
+    @SneakyThrows
+    public void stockEventCreate(OrderDebeziumResponse response) {
+        StockCreateEvent stockCreateEvent = mapper.readValue(response.getPayload(), StockCreateEvent.class);
+
+        Optional<Products> productStock = productStockRepository.findByProductId(stockCreateEvent.getProductId());
+
+        if (productStock.isPresent()) {
+            if (productStock.get().getStockSize() < 1) {
+                productOutboxRepository.save(toOutboxEntity(productStock.get(), ProductOutboxStatus.FAILED, "orderFailed", "notAvaliableStock", stockCreateEvent.getOrderId()));
+                return;
+            }
+
+            if (stockCreateEvent.getTotalAmount().compareTo(productStock.get().getTotalAmount()) < 0) {
+                productOutboxRepository.save(toOutboxEntity(productStock.get(), ProductOutboxStatus.FAILED, "orderFailed", "amountNotEnough", stockCreateEvent.getOrderId()));
+                return;
+            }
+
+            Integer updateVersion = productStockRepository.updateProductStock(productStock.get().getId(), productStock.get().getVersion());
+            if (updateVersion < 1) {
+                productOutboxRepository.save(toOutboxEntity(productStock.get(), ProductOutboxStatus.FAILED, "orderFailed", "versionChange", stockCreateEvent.getOrderId()));
+                return;
+            }
+
+            productOutboxRepository.save(toOutboxEntity(productStock.get(), ProductOutboxStatus.DONE, "orderCompleted", "successfull", stockCreateEvent.getOrderId()));
+
+        } else {
+            productOutboxRepository.save(toOutboxEntityNoProduct(stockCreateEvent, ProductOutboxStatus.FAILED, "orderFailed", "noProduct"));
+        }
     }
 }
