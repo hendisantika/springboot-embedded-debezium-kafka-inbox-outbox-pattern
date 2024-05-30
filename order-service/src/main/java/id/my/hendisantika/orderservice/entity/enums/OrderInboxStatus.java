@@ -1,4 +1,4 @@
-package id.my.hendisantika.orderservice.entity;
+package id.my.hendisantika.orderservice.entity.enums;
 
 /**
  * Created by IntelliJ IDEA.
@@ -7,11 +7,10 @@ package id.my.hendisantika.orderservice.entity;
  * Email: hendisantika@gmail.com
  * Telegram : @hendisantika34
  * Date: 5/30/24
- * Time: 07:24
+ * Time: 07:26
  * To change this template use File | Settings | File Templates.
  */
-public enum OrderOutboxStatus {
+public enum OrderInboxStatus {
     CREATED,
-    PROCESSED,
-    DONE
+    PROCESSED
 }
