@@ -64,4 +64,13 @@ public class KafkaConfig {
         configProps.put(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG, "1000");
         return new DefaultKafkaConsumerFactory<>(configProps);
     }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, String> orderSuccessFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, String> factory =
+                new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(consumerFactorySuccess());
+        factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL_IMMEDIATE);
+        return factory;
+    }
 }
