@@ -1,12 +1,16 @@
 package id.my.hendisantika.orderservice.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import id.my.hendisantika.orderservice.dto.response.OrderDebeziumResponse;
 import id.my.hendisantika.orderservice.entity.OrderOutbox;
 import id.my.hendisantika.orderservice.repository.OrderOutboxRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
+
+import java.util.Map;
 
 /**
  * Created by IntelliJ IDEA.
@@ -29,5 +33,11 @@ public class OutboxService {
 
     public void save(OrderOutbox orderOutbox) {
         orderOutboxRepository.save(orderOutbox);
+    }
+
+    @SneakyThrows
+    public void maintainReadModel(Map<String, Object> productData, Operation operation) {
+        final OrderDebeziumResponse response = mapper.convertValue(productData, OrderDebeziumResponse.class);
+        kafkaTemplate.send("order-created", response.getIdempotent_key(), mapper.writeValueAsString(response));
     }
 }
