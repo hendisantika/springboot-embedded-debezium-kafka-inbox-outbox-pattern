@@ -3,6 +3,7 @@ package id.my.hendisantika.orderservice.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import id.my.hendisantika.orderservice.dto.response.OrderDebeziumResponse;
 import id.my.hendisantika.orderservice.entity.OrderOutbox;
+import id.my.hendisantika.orderservice.entity.enums.Operation;
 import id.my.hendisantika.orderservice.repository.OrderOutboxRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
