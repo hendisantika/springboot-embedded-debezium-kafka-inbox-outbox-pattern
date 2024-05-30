@@ -3,6 +3,7 @@ package id.my.hendisantika.orderservice.listener;
 import id.my.hendisantika.orderservice.service.OutboxService;
 import io.debezium.config.Configuration;
 import io.debezium.embedded.EmbeddedEngine;
+import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -35,6 +36,11 @@ public class DebeziumSourceEventListener {
                 .notifying(this::handleEvent).build();
 
         this.outboxService = outboxService;
+    }
+
+    @PostConstruct
+    private void start() {
+        this.executor.execute(engine);
     }
 
 }
