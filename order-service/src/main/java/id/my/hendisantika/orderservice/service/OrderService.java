@@ -1,6 +1,8 @@
 package id.my.hendisantika.orderservice.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import id.my.hendisantika.orderservice.dto.request.OrderRequestDto;
+import id.my.hendisantika.orderservice.entity.Order;
 import id.my.hendisantika.orderservice.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,4 +26,10 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final OutboxService outboxService;
     private final ObjectMapper objectMapper = new ObjectMapper();
+
+    public Boolean createOrder(OrderRequestDto orderRequestDto) {
+        Order order = orderRepository.save(convertToOrder(orderRequestDto));
+        outboxService.save(toOutboxEntity(order));
+        return true;
+    }
 }
