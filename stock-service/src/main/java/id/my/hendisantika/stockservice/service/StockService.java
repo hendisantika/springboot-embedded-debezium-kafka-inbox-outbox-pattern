@@ -1,6 +1,8 @@
 package id.my.hendisantika.stockservice.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import id.my.hendisantika.stockservice.entity.ProductOutbox;
 import id.my.hendisantika.stockservice.entity.Products;
 import id.my.hendisantika.stockservice.entity.enums.Operation;
 import id.my.hendisantika.stockservice.entity.enums.ProductOutboxStatus;
@@ -9,10 +11,12 @@ import id.my.hendisantika.stockservice.repository.ProductsRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Optional;
 
@@ -76,5 +80,28 @@ public class StockService {
         } else {
             productOutboxRepository.save(toOutboxEntityNoProduct(stockCreateEvent, ProductOutboxStatus.FAILED, "orderFailed", "noProduct"));
         }
+    }
+
+    private ProductOutbox toOutboxEntity(Products productStock, ProductOutboxStatus productOutboxStatus, String aggregateType, String eventType, Long orderId) {
+        String payload = null;
+        String idempotentKey = RandomStringUtils.randomAlphanumeric(10);
+        try {
+
+            payload = mapper.writeValueAsString(productStock);
+
+        } catch (JsonProcessingException ex) {
+            log.error("Object could not convert to String. Object: {}", productStock.toString());
+            throw new RuntimeException(ex);
+        }
+
+        return ProductOutbox.builder()
+                .status(productOutboxStatus)
+                .createdDate(LocalDateTime.now())
+                .idempotentKey(idempotentKey)
+                .payload(payload)
+                .aggregateType(aggregateType)
+                .eventType(eventType)
+                .orderId(orderId)
+                .build();
     }
 }
