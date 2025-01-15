@@ -15,7 +15,7 @@
     <description>stock-service</description>
     <properties>
         <java.version>21</java.version>
-        <version.debezium>3.0.6.Final</version.debezium>
+        <version.debezium>3.0.7.Final</version.debezium>
     </properties>
     <dependencies>
         <dependency>
